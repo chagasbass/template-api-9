@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="MotorCredito.API.Contextos.EsteirasDeCredito.Endpoints.EsteiraDeCreditoModules">
+    <Position X="1" Y="0.5" Width="3.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Contextos\EsteirasDeCredito\Endpoints\EsteiraDeCreditoModules.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="MotorCredito.API.Contextos.EsteirasDeCredito.Commands.ListarEsteiraDeCreditoCommandQuery">
+    <Position X="5" Y="0.75" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Contextos\EsteirasDeCredito\Commands\ListarEsteiraDeCreditoCommandQuery.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="MotorCredito.API.Contextos.EsteirasDeCredito.QueryHelpers.EsteiraDeCreditoQueryHelpers">
+    <Position X="8.5" Y="5.75" Width="3.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAAAAAAAACAAAAAAAAAAAAAAACAAAA=</HashCode>
+      <FileName>Contextos\EsteirasDeCredito\QueryHelpers\EsteiraDeCreditoQueryHelpers.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MotorCredito.API.Contextos.EsteirasDeCredito.QueryHandlers.EsteiraDeCreditoQueryHandlers">
+    <Position X="1.75" Y="2.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAA=</HashCode>
+      <FileName>Contextos\EsteirasDeCredito\QueryHandlers\EsteiraDeCreditoQueryHandlers.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="MotorCredito.API.Contextos.EsteirasDeCredito.Entities.EsteiraDeCredito">
+    <Position X="8.25" Y="2" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAABIBAAwCAAAAAkAAAAAAAAAAAAAAACQAAAAAEAAAA=</HashCode>
+      <FileName>Contextos\EsteirasDeCredito\Entities\EsteiraDeCredito.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MotorCredito.API.Contextos.EsteirasDeCredito.Repositories.EsteiraCreditoRepository">
+    <Position X="3.5" Y="5.75" Width="3.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAA=</HashCode>
+      <FileName>Contextos\EsteirasDeCredito\Repositories\EsteiraCreditoRepository.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Interface Name="MotorCredito.API.Contextos.EsteirasDeCredito.Repositories.IEsteiraCreditoRepository">
+    <Position X="2.25" Y="4.25" Width="3.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAA=</HashCode>
+      <FileName>Contextos\EsteirasDeCredito\Repositories\IEsteiraCreditoRepository.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

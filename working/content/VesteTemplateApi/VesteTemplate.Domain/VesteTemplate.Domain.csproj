@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VesteTemplate.Shared\VesteTemplate.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Contexts\Weathers\DomainServices\" />
+    <Folder Include="Contexts\Weathers\Repositories\" />
+    <Folder Include="Contexts\Weathers\ValueObjects\" />
+  </ItemGroup>
+
+</Project>

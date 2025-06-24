@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Thiago Chagas",
+  "description": "Aplicação do tipo API já configurada com extensões de arquitetura usando o net core 9",
+  "classifications": [
+    "ASP.NET Core",
+    "API"
+  ],
+  "identity": "TemplateApi.Veste",
+  "groupIdentity": "TemplateApi.Veste.Customs",
+  "name": "Veste API Template",
+  "shortName": "veste-api-9",
+  "sourceName": "VesteTemplate",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "symbols": {
+    "tests": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true"
+    },
+    "domain": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true"
+    },
+    "applicationservices": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true"
+    },
+    "infradata": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true"
+    },
+    "shared": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true"
+    },
+    "extensions": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true"
+    }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(!tests)",
+          "exclude": [
+            "VesteTemplate.Test/**/*"
+          ]
+        },
+        {
+          "condition": "(!domain)",
+          "exclude": [
+            "VesteTemplate.Domain/**/*"
+          ]
+        },
+        {
+          "condition": "(!applicationservices)",
+          "exclude": [
+            "VesteTemplate.ApplicationServices/**/*"
+          ]
+        },
+        {
+          "condition": "(!infradata)",
+          "exclude": [
+            "VesteTemplate.Infra.Data/**/*"
+          ]
+        },
+        {
+          "condition": "(!shared)",
+          "exclude": [
+            "VesteTemplate.Shared/**/*"
+          ]
+        },
+        {
+          "condition": "(!extensions)",
+          "exclude": [
+            "VesteTemplate.Extensions/**/*"
+          ]
+        }
+      ]
+    }
+  ]
+}
