@@ -1,42 +1,38 @@
-﻿using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
+﻿namespace VesteTemplate.Extensions.Documentations.Filters;
 
-namespace VesteTemplate.Extensions.Documentations.Filters
+/// <summary>
+/// Classe para o swagger entender quando existe o parâmetro de rota que não é obrigatório.
+/// </summary>
+public class ReApplyOptionalRouteParameterOperationFilter : IOperationFilter
 {
-    /// <summary>
-    /// Classe para o swagger entender quando existe o parâmetro de rota que não é obrigatório.
-    /// </summary>
-    public class ReApplyOptionalRouteParameterOperationFilter : IOperationFilter
+    const string captureName = "routeParameter";
+
+    public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        const string captureName = "routeParameter";
+        var httpMethodAttributes = context.MethodInfo
+             .GetCustomAttributes(true)
+             .OfType<Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute>();
 
-        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        var httpMethodWithOptional = httpMethodAttributes?.FirstOrDefault(m => m.Template?.Contains("?") ?? false);
+        if (httpMethodWithOptional == null)
+            return;
+
+        string regex = $"{{(?<{captureName}>\\w+)\\?}}";
+
+        var matches = System.Text.RegularExpressions.Regex.Matches(httpMethodWithOptional.Template, regex);
+
+        foreach (System.Text.RegularExpressions.Match match in matches)
         {
-            var httpMethodAttributes = context.MethodInfo
-                 .GetCustomAttributes(true)
-                 .OfType<Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute>();
+            var name = match.Groups[captureName].Value;
 
-            var httpMethodWithOptional = httpMethodAttributes?.FirstOrDefault(m => m.Template?.Contains("?") ?? false);
-            if (httpMethodWithOptional == null)
-                return;
-
-            string regex = $"{{(?<{captureName}>\\w+)\\?}}";
-
-            var matches = System.Text.RegularExpressions.Regex.Matches(httpMethodWithOptional.Template, regex);
-
-            foreach (System.Text.RegularExpressions.Match match in matches)
+            var parameter = operation.Parameters.FirstOrDefault(p => p.In == ParameterLocation.Path && p.Name == name);
+            if (parameter != null)
             {
-                var name = match.Groups[captureName].Value;
-
-                var parameter = operation.Parameters.FirstOrDefault(p => p.In == ParameterLocation.Path && p.Name == name);
-                if (parameter != null)
-                {
-                    parameter.AllowEmptyValue = true;
-                    parameter.Description = "A opção \"Send empty value\" deve ser marcada caso não seja efetuada a passagem do parâmetro";
-                    parameter.Required = false;
-                    //parameter.Schema.Default = new OpenApiString(string.Empty);
-                    parameter.Schema.Nullable = true;
-                }
+                parameter.AllowEmptyValue = true;
+                parameter.Description = "A opção \"Send empty value\" deve ser marcada caso não seja efetuada a passagem do parâmetro";
+                parameter.Required = false;
+                //parameter.Schema.Default = new OpenApiString(string.Empty);
+                parameter.Schema.Nullable = true;
             }
         }
     }

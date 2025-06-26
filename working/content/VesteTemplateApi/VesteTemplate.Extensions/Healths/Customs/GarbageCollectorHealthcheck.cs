@@ -1,42 +1,29 @@
-﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Options;
-using VesteTemplate.Extensions.Health.Entities;
-using VesteTemplate.Shared.Extensions;
+﻿namespace VesteTemplate.Extensions.Health.Customs;
 
-namespace VesteTemplate.Extensions.Health.Customs
+/// <summary>
+/// Healthcheck customizado para verificar o consumo de memória da aplicação
+/// </summary>
+public class GarbageCollectorHealthcheck(IOptionsMonitor<GCInfoOptions> options) : IHealthCheck
 {
-    /// <summary>
-    /// Healthcheck customizado para verificar o consumo de memória da aplicação
-    /// </summary>
-    public class GarbageCollectorHealthcheck : IHealthCheck
+    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        private readonly GCInfoOptions _options;
+        var allocatedMemory = GC.GetTotalMemory(forceFullCollection: false);
+        GCInfoOptions.MaxMemory = MemoryConverterExtensions.ConvertMemorySize(options.CurrentValue.Threshold);
+        GCInfoOptions.AllocatedMemory = MemoryConverterExtensions.ConvertMemorySize(allocatedMemory);
 
-        public GarbageCollectorHealthcheck(IOptionsMonitor<GCInfoOptions> options)
+        var gcInfo = GC.GetGCMemoryInfo();
+        GCInfoOptions.TotalAvailableMemory = MemoryConverterExtensions.ConvertMemorySize(gcInfo.TotalAvailableMemoryBytes);
+        GCInfoOptions.SetOperationalSystem();
+
+        if (allocatedMemory > options.CurrentValue.Threshold)
         {
-            _options = options.CurrentValue;
+            return Task.FromResult(new HealthCheckResult(
+                                          HealthStatus.Degraded,
+                                          description: HealthNames.MemoryDescriptionError));
         }
 
-        public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
-        {
-            var allocatedMemory = GC.GetTotalMemory(forceFullCollection: false);
-            GCInfoOptions.MaxMemory = MemoryConverterExtensions.ConvertMemorySize(_options.Threshold);
-            GCInfoOptions.AllocatedMemory = MemoryConverterExtensions.ConvertMemorySize(allocatedMemory);
-
-            var gcInfo = GC.GetGCMemoryInfo();
-            GCInfoOptions.TotalAvailableMemory = MemoryConverterExtensions.ConvertMemorySize(gcInfo.TotalAvailableMemoryBytes);
-            GCInfoOptions.SetOperationalSystem();
-
-            if (allocatedMemory > _options.Threshold)
-            {
-                return new HealthCheckResult(
-                                              HealthStatus.Degraded,
-                                              description: HealthNames.MemoryDescription);
-            }
-
-            return new HealthCheckResult(
-                                          HealthStatus.Healthy,
-                                          description: HealthNames.MemoryDescription);
-        }
+        return Task.FromResult(new HealthCheckResult(
+                                      HealthStatus.Healthy,
+                                      description: HealthNames.MemoryDescription));
     }
 }

@@ -1,3 +1,4 @@
+using Flunt.Notifications;
 using System.Net.Mime;
 using VesteTemplateApi.Domain.Entities;
 
@@ -33,6 +34,8 @@ public class WeatherForecastController(ILogServices logServices, INotificationSe
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<CommandResult>> GetWeathersAsync()
     {
+        logServices.WriteStaticMessage("Teste de log");
+
         var weathers = Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
             Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
@@ -90,6 +93,17 @@ public class WeatherForecastControllerV2(ILogServices logServices, INotification
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<CommandResult>> GetWeathersBySummaryV2Async([FromQuery] string summary)
     {
+
+        if (string.IsNullOrEmpty(summary))
+        {
+            notificationServices.AddNotifications(new List<Notification> { new Notification("weather", "dados não encontrados.") }, StatusCodeOperation.NotFound);
+
+            var command = new CommandResult(true);
+
+            return FormatApiResponse(command);
+        }
+
+
         var weathers = Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
             Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
@@ -98,9 +112,11 @@ public class WeatherForecastControllerV2(ILogServices logServices, INotification
         })
         .ToArray().Where(x => x.Summary.Contains(summary));
 
+        if (!weathers.Any())
+            notificationServices.AddStatusCode(StatusCodeOperation.NotFound);
+
         var commandResult = new CommandResult(weathers, true, "verifique os dados");
 
         return FormatApiResponse(commandResult);
     }
 }
-

@@ -1,47 +1,42 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.Extensions.DependencyInjection;
-using System.IO.Compression;
+﻿namespace VesteTemplate.Extensions.Performances;
 
-namespace VesteTemplate.Extensions.Performances
+public static class PerformanceApiExtensions
 {
-    public static class PerformanceApiExtensions
+    public static IServiceCollection AddRequestResponseCompress(this IServiceCollection services)
     {
-        public static IServiceCollection AddRequestResponseCompress(this IServiceCollection services)
+        services.AddResponseCompression(options =>
         {
-            services.AddResponseCompression(options =>
-            {
-                options.Providers.Add<BrotliCompressionProvider>();
-                options.Providers.Add<GzipCompressionProvider>();
-                options.EnableForHttps = true;
+            options.Providers.Add<BrotliCompressionProvider>();
+            options.Providers.Add<GzipCompressionProvider>();
+            options.EnableForHttps = true;
 
-                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/json" });
-            });
+            options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/json" });
+        });
 
-            services.Configure<BrotliCompressionProviderOptions>(brotliOptions =>
-            {
-                brotliOptions.Level = CompressionLevel.Fastest;
-            });
-
-            services.Configure<GzipCompressionProviderOptions>(gzipOptions =>
-            {
-                gzipOptions.Level = CompressionLevel.Fastest;
-            });
-
-            return services;
-        }
-
-        public static IServiceCollection AddResponseRequestConfiguration(this IServiceCollection services)
+        services.Configure<BrotliCompressionProviderOptions>(brotliOptions =>
         {
-            services.AddControllers().AddJsonOptions(opcoes =>
-            {
-                var serializerOptions = opcoes.JsonSerializerOptions;
-                serializerOptions.IgnoreNullValues = true;
-                serializerOptions.WriteIndented = true;
-            });
+            brotliOptions.Level = CompressionLevel.Fastest;
+        });
 
-            return services;
-        }
+        services.Configure<GzipCompressionProviderOptions>(gzipOptions =>
+        {
+            gzipOptions.Level = CompressionLevel.Fastest;
+        });
 
+        return services;
+    }
+
+    public static IServiceCollection AddResponseRequestConfiguration(this IServiceCollection services)
+    {
+        services.AddControllers().AddJsonOptions(opcoes =>
+        {
+            var serializerOptions = opcoes.JsonSerializerOptions;
+            serializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            serializerOptions.WriteIndented = true;
+        });
+
+        return services;
     }
 }
+
+

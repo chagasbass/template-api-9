@@ -1,81 +1,68 @@
-﻿
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using System.Net;
-using System.Text.Json;
-using VesteTemplate.Extensions.Logs.Services;
-using VesteTemplate.Factories;
-using VesteTemplate.Shared.Configurations;
-using VesteTemplate.Shared.Entities;
-using VesteTemplate.Shared.Enums;
+﻿namespace VesteTemplate.Extensions.Middlewares;
 
-namespace VesteTemplate.Extensions.Middlewares
+public class UnauthorizedTokenMiddleware : IMiddleware
 {
-    public class UnauthorizedTokenMiddleware : IMiddleware
+    private readonly ProblemDetailConfigurationOptions _problemOptions;
+    private readonly ILogServices _logServices;
+
+    public UnauthorizedTokenMiddleware(IOptions<ProblemDetailConfigurationOptions> options,
+                                           ILogServices logServices)
     {
-        private readonly ProblemDetailConfigurationOptions _problemOptions;
-        private readonly ILogServices _logServices;
+        _problemOptions = options.Value;
+        _logServices = logServices;
+    }
 
-        public UnauthorizedTokenMiddleware(IOptions<ProblemDetailConfigurationOptions> options,
-                                               ILogServices logServices)
+    private ProblemDetails ConfigureProblemDetails(int statusCode, HttpContext context)
+    {
+        var defaultTitle = "A Validação do Token de acesso Falhou";
+        var defaultDetail = "Acesso Negado";
+
+        var title = _problemOptions.Title;
+        var detail = _problemOptions.Detail;
+        var instance = context.Request.HttpContext.Request.Path.ToString();
+
+        var type = StatusCodeOperation.RetrieveStatusCode(statusCode);
+
+        if (string.IsNullOrEmpty(title))
+            title = defaultTitle;
+
+        if (string.IsNullOrEmpty(detail))
+            detail = defaultDetail;
+
+        return new ProblemDetails()
         {
-            _problemOptions = options.Value;
-            _logServices = logServices;
-        }
+            Detail = detail,
+            Instance = instance,
+            Status = statusCode,
+            Title = title,
+            Type = type.Text
+        };
+    }
 
-        private ProblemDetails ConfigureProblemDetails(int statusCode, HttpContext context)
+    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+    {
+        await next(context);
+
+        if (context.Response.StatusCode == (int)HttpStatusCode.Unauthorized)
         {
-            var defaultTitle = "A Validação do Token de acesso Falhou";
-            var defaultDetail = "Acesso Negado";
+            const string dataType = @"application/problem+json";
+            const int statusCode = StatusCodes.Status401Unauthorized;
 
-            var title = _problemOptions.Title;
-            var detail = _problemOptions.Detail;
-            var instance = context.Request.HttpContext.Request.Path.ToString();
+            var problemDetails = ConfigureProblemDetails(statusCode, context);
 
-            var type = StatusCodeOperation.RetrieveStatusCode(statusCode);
+            var commandResult = new CommandResult(problemDetails);
 
-            if (string.IsNullOrEmpty(title))
-                title = defaultTitle;
+            context.Response.StatusCode = statusCode;
+            context.Response.ContentType = dataType;
 
-            if (string.IsNullOrEmpty(detail))
-                detail = defaultDetail;
+            _logServices.LogData.AddResponseStatusCode(statusCode)
+                                .AddResponseBody(commandResult)
+                                .AddRequestUrl(context.Request.Path)
+                                .AddRequestQuery(context.Request.QueryString.Value);
 
-            return new ProblemDetails()
-            {
-                Detail = detail,
-                Instance = instance,
-                Status = statusCode,
-                Title = title,
-                Type = type.Text
-            };
-        }
+            _logServices.WriteLog();
 
-        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
-        {
-            await next(context);
-
-            if (context.Response.StatusCode == (int)HttpStatusCode.Unauthorized)
-            {
-                const string dataType = @"application/problem+json";
-                const int statusCode = StatusCodes.Status401Unauthorized;
-
-                var problemDetails = ConfigureProblemDetails(statusCode, context);
-
-                var commandResult = new CommandResult(problemDetails);
-
-                context.Response.StatusCode = statusCode;
-                context.Response.ContentType = dataType;
-
-                _logServices.LogData.AddResponseStatusCode(statusCode)
-                                    .AddResponseBody(commandResult)
-                                    .AddRequestUrl(context.Request.Path)
-                                    .AddRequestQuery(context.Request.QueryString.Value);
-
-                _logServices.WriteLog();
-
-                await context.Response.WriteAsync(JsonSerializer.Serialize(commandResult, JsonOptionsFactory.GetSerializerOptions()));
-            }
+            await context.Response.WriteAsync(JsonSerializer.Serialize(commandResult, JsonOptionsFactory.GetSerializerOptions()));
         }
     }
 }

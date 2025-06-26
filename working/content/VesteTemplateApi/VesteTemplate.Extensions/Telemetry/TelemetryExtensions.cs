@@ -1,15 +1,13 @@
-﻿
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿namespace VesteTemplate.Extensions.Telemetry;
 
-namespace VesteTemplate.Extensions.Telemetry
+public static class TelemetryExtensions
 {
-    public static class TelemetryExtensions
+    public static IServiceCollection AddApplicationInsightsApiTelemetry(this IServiceCollection services, IConfiguration configuration)
     {
-        public static IServiceCollection AddApplicationInsightsApiTelemetry(this IServiceCollection services, IConfiguration configuration)
-        {
-            var connectionString = configuration.GetConnectionString("ApplicationInsights");
+        var connectionString = configuration.GetConnectionString("ApplicationInsights");
 
+        if (!string.IsNullOrEmpty(connectionString))
+        {
             var options = new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
             {
                 EnableAdaptiveSampling = true,
@@ -18,20 +16,23 @@ namespace VesteTemplate.Extensions.Telemetry
             };
 
             services.AddApplicationInsightsTelemetry(options);
-
-            return services;
         }
 
-        public static IServiceCollection AddApplicationInsightsWorkerTelemetry(this IServiceCollection services, IConfiguration configuration)
-        {
-            var connectionString = configuration.GetConnectionString("ApplicationInsights");
+        return services;
+    }
 
+    public static IServiceCollection AddApplicationInsightsWorkerTelemetry(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("ApplicationInsights");
+
+        if (!string.IsNullOrEmpty(connectionString))
+        {
             services.AddApplicationInsightsTelemetryWorkerService(new Microsoft.ApplicationInsights.WorkerService.ApplicationInsightsServiceOptions
             {
                 ConnectionString = connectionString
             });
-
-            return services;
         }
+
+        return services;
     }
 }

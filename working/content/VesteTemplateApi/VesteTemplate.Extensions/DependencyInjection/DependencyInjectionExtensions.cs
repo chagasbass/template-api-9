@@ -1,8 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using VesteTemplate.Extensions.Logs.Configurations;
-using VesteTemplate.Extensions.Notifications;
-
-namespace VesteTemplate.Extensions.DependencyInjection;
+﻿namespace VesteTemplate.Extensions.DependencyInjection;
 
 public static class DependencyInjectionExtensions
 {

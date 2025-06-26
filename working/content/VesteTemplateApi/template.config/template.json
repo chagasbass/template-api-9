@@ -3,8 +3,7 @@
   "author": "Thiago Chagas",
   "description": "Aplicação do tipo API já configurada com extensões de arquitetura usando o net core 9",
   "classifications": [
-    "ASP.NET Core",
-    "API"
+    " Web","Web API","Service"
   ],
   "identity": "TemplateApi.Veste",
   "groupIdentity": "TemplateApi.Veste.Customs",

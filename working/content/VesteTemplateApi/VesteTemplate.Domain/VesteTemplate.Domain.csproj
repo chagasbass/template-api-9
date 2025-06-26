@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Folder Include="Contexts\Weathers\DomainServices\" />
+    <Folder Include="Contexts\Weathers\Enums\" />
     <Folder Include="Contexts\Weathers\Repositories\" />
     <Folder Include="Contexts\Weathers\ValueObjects\" />
   </ItemGroup>

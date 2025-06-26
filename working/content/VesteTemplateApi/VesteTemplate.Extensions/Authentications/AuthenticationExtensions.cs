@@ -1,13 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using VesteTemplate.Extensions.Middlewares;
-
-namespace VesteTemplate.Extensions.Authentications;
+﻿namespace VesteTemplate.Extensions.Authentications;
 
 public static class AuthenticationExtensions
 {

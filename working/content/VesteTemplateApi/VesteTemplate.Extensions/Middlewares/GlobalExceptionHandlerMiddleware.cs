@@ -1,76 +1,31 @@
-﻿
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using System.Text.Json;
-using VesteTemplate.Extensions.Logs.Services;
-using VesteTemplate.Factories;
-using VesteTemplate.Shared.Configurations;
-using VesteTemplate.Shared.Entities;
-using VesteTemplate.Shared.Enums;
+﻿namespace VesteTemplate.Extensions.Middlewares;
 
-namespace VesteTemplate.Extensions.Middlewares;
-
-public class GlobalExceptionHandlerMiddleware : IMiddleware
+public sealed class GlobalExceptionHandlerMiddleware(IOptions<ProblemDetailConfigurationOptions> problemOptions,
+                                                     ILogServices logServices) : IExceptionHandler
 {
-    private readonly ProblemDetailConfigurationOptions _problemOptions;
-    private readonly ILogServices _logServices;
-
-    public GlobalExceptionHandlerMiddleware(IOptions<ProblemDetailConfigurationOptions> options,
-                                           ILogServices logServices)
-    {
-        _problemOptions = options.Value;
-        _logServices = logServices;
-    }
-
-    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
-    {
-        try
-        {
-            await next(context);
-        }
-        catch (Exception ex)
-        {
-            await HandleExceptionAsync(context, ex);
-        }
-    }
-
     /// <summary>
     /// Responsavel por tratar as exceções geradas na aplicação
     /// </summary>
     /// <param name="context"></param>
     /// <param name="exception"></param>
     /// <returns></returns>
-    public async Task HandleExceptionAsync(HttpContext context, Exception exception)
+
+    private ProblemDetails ConfigureProblemDetails(int statusCode, HttpContext context)
     {
-        const string dataType = @"application/problem+json";
-        const int statusCode = StatusCodes.Status500InternalServerError;
+        var defaultTitle = $"Um erro ocorreu ao processar o request às {DateTimeExtensions.GetGmtDateTime()}";
+        var defaultDetail = $"Erro fatal na aplicação,entre em contato com um Desenvolvedor responsável.";
 
-        _logServices.LogData.AddException(exception);
-        _logServices.LogData.AddResponseStatusCode(statusCode);
-        _logServices.WriteLog();
-        _logServices.WriteLogWhenRaiseExceptions();
-
-        var problemDetails = ConfigureProblemDetails(statusCode, exception, context);
-
-        var commandResult = new CommandResult(problemDetails);
-
-        context.Response.StatusCode = statusCode;
-        context.Response.ContentType = dataType;
-
-        await context.Response.WriteAsync(JsonSerializer.Serialize(commandResult, JsonOptionsFactory.GetSerializerOptions()));
-    }
-
-    private ProblemDetails ConfigureProblemDetails(int statusCode, Exception exception, HttpContext context)
-    {
-        var defaultTitle = "Um erro ocorreu ao processar o request.";
-        var defaultDetail = $"Erro fatal na aplicação,entre em contato com um Desenvolvedor responsável. Causa: {exception.Message}";
-
-        var title = _problemOptions.Title;
-        var detail = _problemOptions.Detail;
+        var title = problemOptions.Value.Title;
+        var detail = problemOptions.Value.Detail;
         var instance = context.Request.HttpContext.Request.Path.ToString();
 
         var type = StatusCodeOperation.RetrieveStatusCode(statusCode);
+
+        if (type == StatusCodeOperation.NotFound)
+        {
+            defaultTitle = $"Verifique o seu request processado ás às {DateTimeExtensions.GetGmtDateTime()}";
+            defaultDetail = "Verifique o seu request.";
+        }
 
         if (string.IsNullOrEmpty(title))
             title = defaultTitle;
@@ -86,5 +41,37 @@ public class GlobalExceptionHandlerMiddleware : IMiddleware
             Title = title,
             Type = type.Text
         };
+    }
+
+    public async Task HandleExceptionAsync(HttpContext context, Exception exception, CancellationToken cancellationToken)
+    {
+        if (exception is null)
+            return;
+
+        const string dataType = @"application/problem+json";
+        const int statusCode = StatusCodes.Status500InternalServerError;
+
+        logServices.LogData.AddResponseStatusCode(statusCode)
+                           .AddException(exception);
+
+        var problemDetails = ConfigureProblemDetails(statusCode, context);
+
+        var commandResult = new CommandResult(problemDetails);
+
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = dataType;
+
+        var jsonResponse = JsonSerializer.Serialize(commandResult, JsonOptionsFactory.GetSerializerOptions());
+
+        await context.Response.WriteAsync(jsonResponse, cancellationToken);
+
+        logServices.WriteLogWhenRaiseExceptions();
+    }
+
+    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+    {
+        await HandleExceptionAsync(httpContext, exception, cancellationToken);
+
+        return true;
     }
 }

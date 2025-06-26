@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace VesteTemplate.Extensions.Documentations;
+﻿namespace VesteTemplate.Extensions.Documentations;
 
 public static class VersioningExtensions
 {

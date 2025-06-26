@@ -4,27 +4,19 @@
     /// Controller Base da aplicação
     /// </summary>
     [ApiController]
-    public abstract class ApiBaseController : ControllerBase
+    public abstract class ApiBaseController(ILogServices logServices, INotificationServices notificationServices) : ControllerBase
     {
-        private readonly ILogServices _logServices;
-        private readonly INotificationServices _notificationServices;
-        public ApiBaseController(ILogServices logServices, INotificationServices notificationServices)
-        {
-            _logServices = logServices;
-            _notificationServices = notificationServices;
-        }
-
         internal ActionResult FormatApiResponse(CommandResult commandResult, string? defaultEndpointRoute = null)
         {
-            var statusCodeOperation = _notificationServices.StatusCode;
+            var statusCodeOperation = notificationServices.StatusCode;
 
             ICommandResult result = default;
 
-            if (_notificationServices.HasNotifications())
+            if (notificationServices.HasNotifications())
             {
                 result = CreateErrorResponse(statusCodeOperation.Id, commandResult);
 
-                _notificationServices.ClearNotifications();
+                notificationServices.ClearNotifications();
             }
 
             switch (statusCodeOperation)
@@ -61,23 +53,18 @@
 
         private void GenerateLogResponse(CommandResult commandResult, int statusCode)
         {
-            _logServices.LogData.AddResponseStatusCode(statusCode)
+            logServices.LogData.AddResponseStatusCode(statusCode)
                                 .AddResponseBody(commandResult);
 
-            _logServices.WriteLog();
-            _notificationServices.ClearNotifications();
+            logServices.WriteLog();
+            notificationServices.ClearNotifications();
         }
 
         private ICommandResult CreateErrorResponse(int statusCode, CommandResult commandResult)
         {
-            var options = JsonOptionsFactory.GetSerializerOptions();
+            var notifications = notificationServices.GetNotifications();
 
-            var notifications = _notificationServices.GetNotifications();
-
-            var jsonNotifications = JsonSerializer.Serialize(notifications, options);
-
-            var detail = jsonNotifications;
-            var defaultTitle = "Um erro ocorreu ao processar o request.";
+            var defaultTitle = "Verifique o retorno do request.";
 
             var problemDetails = new ApiProblemDetails(notifications.ToList(), commandResult?.Message, statusCode, defaultTitle);
 
