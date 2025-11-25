@@ -13,8 +13,8 @@
 	</ItemGroup>
 	
   <ItemGroup>
-    <Folder Include="Contextos\NomeContexto\QueryHelpers\" />
-    <Folder Include="Contextos\NomeContexto\Repositories\" />
+    <Folder Include="Contexts\NomeContexto\QueryHelpers\" />
+    <Folder Include="Contexts\NomeContexto\Repositories\" />
   </ItemGroup>
 
 </Project>
